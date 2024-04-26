@@ -1,6 +1,6 @@
-# Karesansui (Shogun) style map
+# Karesansui (Japanese dry garden) style maps
 # www.overfitting.net
-# https://www.overfitting.net/
+# https://www.overfitting.net/2024/04/mapas-estilo-karesansui-con-r.html
 
 
 library(terra)  # read GeoTIFF, reprojection, crop and resample
@@ -74,7 +74,7 @@ arrayblur=function(img, radius=11) {
 
 # 1. PROCESS GEOTIFF DATA TO GET THE DEM AS A MATRIX
 
-baleares=rast("PNOA_MDT200_ETRS89_HU31_Baleares.tif")  # 985x1544 px
+baleares=rast("PNOA_MDT200_ETRS89_HU31_Baleares.tif")  # (985x1544 px)
 baleares
 plot(baleares)
 RESOLUTION=res(baleares)[1]  # 200m grid resolution
@@ -89,7 +89,7 @@ HEIGHT=max(DEM)
 DEM=DEM/max(DEM)
 writeTIFF(DEM, "baleares.tif", compression='LZW', bits.per.sample=16)
 
-DEM=readTIFF("baleares2.tif")  # added borders to Full HD
+DEM=readTIFF("baleares2.tif")  # added borders to Full HD (1080x1920 px)
 DIMY=nrow(DEM)
 DIMX=ncol(DEM)
 
@@ -144,7 +144,7 @@ image(t(hill[nrow(hill):1,]), useRaster=TRUE,
 
 ###########################################################
 
-# 3. OBTAIN SHOGUN CURVES
+# 3. OBTAIN KARESANSUI GROOVES
 
 # Islands
 indices=unname(which(outline==1, arr.ind=TRUE))  # contour pixels
@@ -192,7 +192,7 @@ writePNG(backgnd, "backgnd.png")
 
 #######################################################
 
-# 4. BLUR OBTAINED CURVES AND GENERATE A HILLSHADE
+# 4. BLUR OBTAINED GROOVES AND GENERATE A HILLSHADE
 
 # It is better to calculate separate hillshades from each DEM and then mix them
 # than mixing the input DEM and calculate a global hillshade because it can
