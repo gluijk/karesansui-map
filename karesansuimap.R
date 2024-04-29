@@ -129,7 +129,7 @@ MIX=0.7  # two light sources are mixed to fill dark areas a bit
 hill=hillshademap(DEM, dx=RESOLUTION/HEIGHT, dlight=c(1, 2, 3))
 hillfill=hillshademap(DEM, dx=RESOLUTION/HEIGHT, dlight=c(1, 3, 2))
 hill=hill*MIX+hillfill*(1-MIX)
-gamma=1/4
+gamma=1/2.2
 hill=(hill/max(hill))^(1/gamma)  # darken hillshade a bit
 
 # Save hillshade
@@ -138,7 +138,7 @@ writeTIFF(hill, "hillshade.tif",
 
 # Display hillshade
 image(t(hill[nrow(hill):1,]), useRaster=TRUE,
-      col=c(gray.colors(256, start=0, end=1, gamma=2)),
+      col=c(gray.colors(256, start=0, end=1, gamma=2.2)),
       asp=nrow(hill)/ncol(hill), axes=FALSE)
 
 
