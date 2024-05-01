@@ -144,7 +144,7 @@ image(t(hill[nrow(hill):1,]), useRaster=TRUE,
 
 ###########################################################
 
-# 3. OBTAIN KARESANSUI GROOVES
+# 3. OBTAIN KARESANSUI GROOVES (2 ALGORITHMS)
 
 # Islands
 GAPISLANDS=20  # islands grooves separation
