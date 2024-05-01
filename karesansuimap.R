@@ -149,7 +149,8 @@ image(t(hill[nrow(hill):1,]), useRaster=TRUE,
 # Islands
 GAPISLANDS=20  # islands grooves separation
 NHORIZ=7
-mode='fast'  # mode=c('fast', 'accurate')
+mode='accurate'  # mode=c('fast', 'accurate')  # Time difference of 4.127238 mins
+mode='fast'  # mode=c('fast', 'accurate')  # Time difference of 13.39945 secs
 
 if (mode=='accurate') {  # circles calculated from inner contour (R increases)
     horizon=outline*0
