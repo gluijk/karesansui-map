@@ -129,7 +129,7 @@ MIX=0.7  # two light sources are mixed to fill dark areas a bit
 hill=hillshademap(DEM, dx=RESOLUTION/HEIGHT, dlight=c(1, 2, 3))
 hillfill=hillshademap(DEM, dx=RESOLUTION/HEIGHT, dlight=c(1, 3, 2))
 hill=hill*MIX+hillfill*(1-MIX)
-gamma=1/2.2
+gamma=1
 hill=(hill/max(hill))^(1/gamma)  # darken hillshade a bit
 
 # Save hillshade
@@ -147,32 +147,72 @@ image(t(hill[nrow(hill):1,]), useRaster=TRUE,
 # 3. OBTAIN KARESANSUI GROOVES
 
 # Islands
-indices=unname(which(outline==1, arr.ind=TRUE))  # contour pixels
-
-horizon=outline*0
 GAPISLANDS=20  # islands grooves separation
 NHORIZ=7
-for (j in 1:NHORIZ) {
-    print(paste0("Calculating groove ", j, "/", NHORIZ, "..."))
-    R=j*GAPISLANDS  # radius in pixels from contour
-    horizontmp=outline*0
-    for (i in 1:nrow(indices)) {
-        x0=indices[i,2]
-        y0=indices[i,1]
-        if (x0>R & y0>R & x0<DIMX-R & y0<DIMY-R)
-            for (x in round(x0-R):round(x0+R)) {
-                for (y in round(y0-R):round(y0+R)) {
-                    if ( ((x-x0)^2 + (y-y0)^2 )^0.5 < R) horizontmp[y,x]=horizontmp[y,x]+1
+mode='fast'  # mode=c('fast', 'accurate')
+mode='accurate'  # mode=c('fast', 'accurate')
+
+if (mode=='accurate') {  # circles calculated from inner contour (R increases)
+    horizon=outline*0
+    indices=unname(which(outline==1, arr.ind=TRUE))  # contour pixels
+    for (j in 1:NHORIZ) {
+        print(paste0("Calculating groove ", j, "/", NHORIZ, "..."))
+        R=j*GAPISLANDS  # radius in pixels from contour
+        horizontmp=outline*0
+        for (i in 1:nrow(indices)) {
+            x0=indices[i,2]
+            y0=indices[i,1]
+            if (x0>R & y0>R & x0<DIMX-R & y0<DIMY-R)
+                for (x in round(x0-R):round(x0+R)) {
+                    for (y in round(y0-R):round(y0+R)) {
+                        if ( ((x-x0)^2 + (y-y0)^2 )^0.5 < R) horizontmp[y,x]=1
+                    }
                 }
-            }
+        }
+        horizontmp[solid==1]=1  # fill inner area of horizontmp to 1
+        horizon=horizon+horizontmp  # accumulate horizon ranges
     }
-    horizontmp[solid==1]=0  # remove calculated visible water on land
-    horizontmp[horizontmp!=0]=1  # clip to 1 all visible water values
-    horizon=horizon+horizontmp  # accumulate horizon ranges
+    rm(horizontmp)
+} else {  # circles calculated from current contour (R=GAPISLANDS is fixed)
+    outlinetmp=outline  # we already calculated solid and outline
+    solidtmp=solid
+    horizon=outlinetmp*0
+    R=GAPISLANDS  # radius in pixels from current contour
+    for (j in 1:NHORIZ) {
+        print(paste0("Calculating groove ", j, "/", NHORIZ, "..."))
+        
+        # Calculate new contour
+        if (j>1) {
+            outlinetmp=solidtmp*0
+            # 1 pixel thickness outline
+            outlinetmp[2:(DIMY-1), 2:(DIMX-1)]=
+                abs(solidtmp[1:(DIMY-2), 2:(DIMX-1)] -
+                        solidtmp[2:(DIMY-1), 2:(DIMX-1)]) +
+                abs(solidtmp[2:(DIMY-1), 1:(DIMX-2)] -
+                        solidtmp[2:(DIMY-1), 2:(DIMX-1)])
+            outlinetmp[outlinetmp!=0]=1
+        }
+
+        # Loop contour pixels
+        indices=unname(which(outlinetmp==1, arr.ind=TRUE))  # current contour pixels
+        horizontmp=outlinetmp*0
+        for (i in 1:nrow(indices)) {
+            x0=indices[i,2]
+            y0=indices[i,1]
+            if (x0>R & y0>R & x0<DIMX-R & y0<DIMY-R)
+                for (x in round(x0-R):round(x0+R)) {
+                    for (y in round(y0-R):round(y0+R)) {
+                        if ( ((x-x0)^2 + (y-y0)^2 )^0.5 < R) horizontmp[y,x]=1
+                    }
+                }
+        }
+        horizontmp[solidtmp==1]=1  # fill inner area of horizontmp to 1
+        horizon=horizon+horizontmp  # accumulate horizon ranges
+        solidtmp=horizontmp
+    }
+    rm(outlinetmp, solidtmp, horizontmp)
 }
 
-# max(horizon) equals NHORIZ
-horizon[solid==1]=NHORIZ  # fill land to avoid applying waves over coast
 writePNG(horizon/max(horizon), "horizon.png")
 
 # Now paint in white all bands of the same odds/evens as band max(horizon) (land)
@@ -224,5 +264,5 @@ hillsea=(hill/max(hill))^(1/gamma)  # darken hillshade a bit
 
 # Mix and save hillshade
 hillhorizon[horizon==0]=hillsea[horizon==0]
-writeTIFF(hillhorizon, "hillshadeshogun.tif",
+writeTIFF(hillhorizon, "hillshadeshogunNEW.tif",
           bits.per.sample=16, compression="LZW")
