@@ -150,7 +150,6 @@ image(t(hill[nrow(hill):1,]), useRaster=TRUE,
 GAPISLANDS=20  # islands grooves separation
 NHORIZ=7
 mode='fast'  # mode=c('fast', 'accurate')
-mode='accurate'  # mode=c('fast', 'accurate')
 
 if (mode=='accurate') {  # circles calculated from inner contour (R increases)
     horizon=outline*0
@@ -187,9 +186,9 @@ if (mode=='accurate') {  # circles calculated from inner contour (R increases)
             # 1 pixel thickness outline
             outlinetmp[2:(DIMY-1), 2:(DIMX-1)]=
                 abs(solidtmp[1:(DIMY-2), 2:(DIMX-1)] -
-                        solidtmp[2:(DIMY-1), 2:(DIMX-1)]) +
+                    solidtmp[2:(DIMY-1), 2:(DIMX-1)]) +
                 abs(solidtmp[2:(DIMY-1), 1:(DIMX-2)] -
-                        solidtmp[2:(DIMY-1), 2:(DIMX-1)])
+                    solidtmp[2:(DIMY-1), 2:(DIMX-1)])
             outlinetmp[outlinetmp!=0]=1
         }
 
